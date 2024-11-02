@@ -1,70 +1,113 @@
-name: "template"
-
+name: "aws-account-settings"
 # Canonical GitHub repo
-github_repo: "cloudposse-terraform-components/template"
-
+github_repo: "cloudposse-terraform-components/aws-account-settings"
 # Short description of this project
 description: |-
-  Description of this component
+  This component is responsible for provisioning account level settings: IAM password policy, AWS Account Alias, EBS
+  encryption, and Service Quotas.
 
-usage: |-
-  **Stack Level**: Regional or Test47
+  ## Usage
 
-  Here's an example snippet for how to use this component.
-  
+  **Stack Level**: Global
+
+  Here's an example snippet for how to use this component. It's suggested to apply this component to all accounts, so
+  create a file `stacks/catalog/account-settings.yaml` with the following content and then import that file in each
+  account's global stack (overriding any parameters as needed):
+
   ```yaml
   components:
     terraform:
-      foo:
+      account-settings:
         vars:
           enabled: true
+          minimum_password_length: 20
+          maximum_password_age: 120
+          budgets_enabled: true
+          budgets_notifications_enabled: true
+          budgets_slack_webhook_url: https://url.slack.com/abcd/1234
+          budgets_slack_username: AWS Budgets
+          budgets_slack_channel: aws-budgets-notifications
+          budgets:
+            - name: 1000-total-monthly
+              budget_type: COST
+              limit_amount: "1000"
+              limit_unit: USD
+              time_unit: MONTHLY
+            - name: s3-3GB-limit-monthly
+              budget_type: USAGE
+              limit_amount: "3"
+              limit_unit: GB
+              time_unit: MONTHLY
+              notification:
+                - comparison_operator: GREATER_THAN
+                  notification_type: FORECASTED
+                  threshold_type: PERCENTAGE
+                  threshold: 80
+                  subscribers:
+                    - slack
+                - comparison_operator: GREATER_THAN
+                  notification_type: FORECASTED
+                  threshold_type: PERCENTAGE
+                  # We generate two forecast notifications. This makes sure that notice is taken,
+                  #   and hopefully action can be taken to prevent going over budget.
+                  threshold: 100
+                  subscribers:
+                    - slack
+                - comparison_operator: GREATER_THAN
+                  notification_type: ACTUAL
+                  threshold_type: PERCENTAGE
+                  threshold: 100
+                  subscribers:
+                    - slack
+          service_quotas_enabled: true
+          service_quotas:
+            - quota_name: Subnets per VPC
+              service_code: vpc
+              value: 250
+            - quota_code: L-E79EC296 # aka `Security Groups per Region`
+              service_code: vpc
+              value: 500
+            - quota_code: L-F678F1CE # aka `VPC per Region`
+              service_code: vpc
+              value: null
   ```
 
+  <!-- prettier-ignore-start -->
+
+  <!-- prettier-ignore-end -->
+
+  ## References
+
+  - [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/account-settings) -
+    Cloud Posse's upstream component
 include:
   - "docs/terraform.md"
-
 tags:
-  - terraform
-  - terraform-modules
-  - aws
-  - components
-  - terraform-components
-  - root
-  - geodesic
-  - reference-implementation
-  - reference-architecture
-
+  - component/account-settings
+  - layer/accounts
+  - provider/aws
+  - privileged
 # Categories of this project
 categories:
-  - terraform-modules/root
-  - terraform-components
-
+  - component/account-settings
+  - layer/accounts
+  - provider/aws
+  - privileged
 # License of this project
 license: "APACHE2"
-
 # Badges to display
 badges:
-  - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse-terraform-components/template.svg?style=for-the-badge"
-    url: "https://github.com/cloudposse-terraform-components/template/releases/latest"
-  - name: "Slack Community"
-    image: "https://slack.cloudposse.com/for-the-badge.svg"
-    url: "https://slack.cloudposse.com"
-
-references:
-  - name: "Cloud Posse Documentation"
-    description: "Complete documentation for the Cloud Posse solution"
-    url: "https://docs.cloudposse.com"
-  - name: "Reference Architectures"
-    description: "Launch effortlessly with our turnkey reference architectures, built either by your team or ours."
-    url: "https://cloudposse.com/"
-
+  - name: Latest Release
+    image: https://img.shields.io/github/release/cloudposse-terraform-components/aws-account-settings.svg?style=for-the-badge
+    url: https://github.com/cloudposse-terraform-components/aws-account-settings/releases/latest
+  - name: Slack Community
+    image: https://slack.cloudposse.com/for-the-badge.svg
+    url: https://slack.cloudposse.com
 related:
-- name: "Cloud Posse Terraform Modules"
-  description: Our collection of reusable Terraform modules used by our reference architectures.
-  url: "https://docs.cloudposse.com/modules/"
-- name: "Atmos"
-  description: "Atmos is like docker-compose but for your infrastructure"
-  url: "https://atmos.tools"
-
+  - name: "Cloud Posse Terraform Modules"
+    description: Our collection of reusable Terraform modules used by our reference architectures.
+    url: "https://docs.cloudposse.com/modules/"
+  - name: "Atmos"
+    description: "Atmos is like docker-compose but for your infrastructure"
+    url: "https://atmos.tools"
 contributors: [] # If included generates contribs
