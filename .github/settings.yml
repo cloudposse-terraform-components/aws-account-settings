@@ -1,0 +1,7 @@
+# Upstream changes from _extends are only recognized when modifications are made to this file in the default branch.
+_extends: .github
+repository:
+  name: aws-account-settings
+  description: 'This component is responsible for provisioning account level settings: IAM password policy, AWS Account Alias, EBS encryption, and Service Quotas'
+  homepage: https://cloudposse.com/accelerate
+  topics: terraform, terraform-component
