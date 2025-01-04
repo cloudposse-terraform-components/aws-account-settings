@@ -5,5 +5,3 @@ repository:
   description: 'This component is responsible for provisioning account level settings: IAM password policy, AWS Account Alias, EBS encryption, and Service Quotas'
   homepage: https://cloudposse.com/accelerate
   topics: terraform, terraform-component
-
-
