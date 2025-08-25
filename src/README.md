@@ -10,7 +10,6 @@ tags:
 
 This component is responsible for provisioning account level settings: IAM password policy, AWS Account Alias, EBS
 encryption, and Service Quotas.
-
 ## Usage
 
 **Stack Level**: Global
@@ -78,7 +77,10 @@ components:
 ```
 
 <!-- prettier-ignore-start -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- prettier-ignore-end -->
+
+
+<!-- markdownlint-disable -->
 ## Requirements
 
 | Name | Version |
@@ -147,12 +149,17 @@ components:
 | Name | Description |
 |------|-------------|
 | <a name="output_account_alias"></a> [account\_alias](#output\_account\_alias) | Account alias |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-<!-- prettier-ignore-end -->
+<!-- markdownlint-restore -->
+
+
 
 ## References
 
-- [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/account-settings) -
-  Cloud Posse's upstream component
+
+- [cloudposse-terraform-components](https://github.com/orgs/cloudposse-terraform-components/repositories) - Cloud Posse's upstream component
+
+
+
 
 [<img src="https://cloudposse.com/logo-300x69.svg" height="32" align="right"/>](https://cpco.io/homepage?utm_source=github&utm_medium=readme&utm_campaign=cloudposse-terraform-components/aws-account-settings&utm_content=)
+
