@@ -1,18 +1,79 @@
-# Set the default mode for EBS volumes to be encrypted
-resource "aws_ebs_encryption_by_default" "default" {
-  count   = module.this.enabled ? 1 : 0
+locals {
+  enabled = module.this.enabled
+}
+
+resource "aws_iam_account_alias" "this" {
+  count = local.enabled && var.account_alias_enabled ? 1 : 0
+
+  account_alias = coalesce(var.account_alias, module.this.id)
+}
+
+resource "aws_s3_account_public_access_block" "this" {
+  count = local.enabled && var.s3_block_public_access_enabled ? 1 : 0
+
+  block_public_acls       = var.s3_block_public_acls
+  block_public_policy     = var.s3_block_public_policy
+  ignore_public_acls      = var.s3_ignore_public_acls
+  restrict_public_buckets = var.s3_restrict_public_buckets
+}
+
+resource "aws_ebs_encryption_by_default" "this" {
+  count = local.enabled && var.ebs_default_encryption_enabled ? 1 : 0
+
   enabled = true
 }
 
-# IAM Account Settings provides a CIS-compliant IAM Password Policy out of the box
-# It also sets the account alias for the current account.
-module "iam_account_settings" {
-  source  = "cloudposse/iam-account-settings/aws"
-  version = "0.5.0"
+resource "aws_ebs_default_kms_key" "this" {
+  count = local.enabled && var.ebs_default_encryption_enabled && var.ebs_default_kms_key_arn != null ? 1 : 0
 
-  hard_expiry             = true
-  minimum_password_length = var.minimum_password_length
-  max_password_age        = var.maximum_password_age
+  key_arn = var.ebs_default_kms_key_arn
+}
 
-  context = module.this.context
+resource "aws_account_alternate_contact" "billing" {
+  count = local.enabled && var.billing_contact != null ? 1 : 0
+
+  alternate_contact_type = "BILLING"
+  name                   = var.billing_contact.name
+  title                  = var.billing_contact.title
+  email_address          = var.billing_contact.email_address
+  phone_number           = var.billing_contact.phone_number
+}
+
+resource "aws_account_alternate_contact" "operations" {
+  count = local.enabled && var.operations_contact != null ? 1 : 0
+
+  alternate_contact_type = "OPERATIONS"
+  name                   = var.operations_contact.name
+  title                  = var.operations_contact.title
+  email_address          = var.operations_contact.email_address
+  phone_number           = var.operations_contact.phone_number
+}
+
+resource "aws_account_alternate_contact" "security" {
+  count = local.enabled && var.security_contact != null ? 1 : 0
+
+  alternate_contact_type = "SECURITY"
+  name                   = var.security_contact.name
+  title                  = var.security_contact.title
+  email_address          = var.security_contact.email_address
+  phone_number           = var.security_contact.phone_number
+}
+
+resource "aws_ssm_document" "session_manager_prefs" {
+  count = local.enabled && var.ssm_session_preferences_enabled ? 1 : 0
+
+  name            = "SSM-SessionManagerRunShell"
+  document_type   = "Session"
+  document_format = "JSON"
+
+  content = jsonencode({
+    schemaVersion = "1.0"
+    description   = "Managed by Terraform"
+    sessionType   = "Standard_Stream"
+    inputs = {
+      idleSessionTimeout = tostring(var.ssm_session_idle_timeout_minutes)
+    }
+  })
+
+  tags = module.this.tags
 }
