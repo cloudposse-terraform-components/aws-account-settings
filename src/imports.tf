@@ -5,7 +5,7 @@ variable "import_account_alias" {
 }
 
 import {
-  for_each = var.import_account_alias != null ? toset([var.import_account_alias]) : toset([])
+  for_each = var.import_account_alias != null && var.enabled != false ? toset([var.import_account_alias]) : toset([])
   to       = aws_iam_account_alias.this[0]
   id       = each.value
 }
