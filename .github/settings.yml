@@ -2,7 +2,7 @@
 _extends: .github
 repository:
   name: aws-account-settings
-  description: 'This component is responsible for provisioning account level settings: IAM password policy, AWS Account Alias, EBS encryption, and Service Quotas'
+  description: 'This component is responsible for provisioning account level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, and SSM session preferences'
   homepage: https://cloudposse.com/accelerate
   topics: terraform, terraform-component
 
