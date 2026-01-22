@@ -30,8 +30,7 @@
 
 -->
 
-This component is responsible for provisioning account level settings: IAM password policy, AWS Account Alias, EBS
-encryption, and Service Quotas.
+This component is responsible for provisioning account level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, and SSM session preferences.
 
 
 > [!TIP]
@@ -63,56 +62,26 @@ components:
     account-settings:
       vars:
         enabled: true
-        minimum_password_length: 20
-        maximum_password_age: 120
-        budgets_enabled: true
-        budgets_notifications_enabled: true
-        budgets_slack_webhook_url: https://url.slack.com/abcd/1234
-        budgets_slack_username: AWS Budgets
-        budgets_slack_channel: aws-budgets-notifications
-        budgets:
-          - name: 1000-total-monthly
-            budget_type: COST
-            limit_amount: "1000"
-            limit_unit: USD
-            time_unit: MONTHLY
-          - name: s3-3GB-limit-monthly
-            budget_type: USAGE
-            limit_amount: "3"
-            limit_unit: GB
-            time_unit: MONTHLY
-            notification:
-              - comparison_operator: GREATER_THAN
-                notification_type: FORECASTED
-                threshold_type: PERCENTAGE
-                threshold: 80
-                subscribers:
-                  - slack
-              - comparison_operator: GREATER_THAN
-                notification_type: FORECASTED
-                threshold_type: PERCENTAGE
-                # We generate two forecast notifications. This makes sure that notice is taken,
-                #   and hopefully action can be taken to prevent going over budget.
-                threshold: 100
-                subscribers:
-                  - slack
-              - comparison_operator: GREATER_THAN
-                notification_type: ACTUAL
-                threshold_type: PERCENTAGE
-                threshold: 100
-                subscribers:
-                  - slack
-        service_quotas_enabled: true
-        service_quotas:
-          - quota_name: Subnets per VPC
-            service_code: vpc
-            value: 250
-          - quota_code: L-E79EC296 # aka `Security Groups per Region`
-            service_code: vpc
-            value: 500
-          - quota_code: L-F678F1CE # aka `VPC per Region`
-            service_code: vpc
-            value: null
+        account_alias_enabled: true
+        s3_block_public_access_enabled: true
+        ebs_default_encryption_enabled: true
+        billing_contact:
+          name: "John Doe"
+          title: "CFO" 
+          email_address: "billing@example.com"
+          phone_number: "+1-555-123-4567"
+        operations_contact:
+          name: "Jane Smith"
+          title: "DevOps Lead"
+          email_address: "ops@example.com"
+          phone_number: "+1-555-234-5678"
+        security_contact:
+          name: "Bob Wilson"
+          title: "CISO"
+          email_address: "security@example.com"
+          phone_number: "+1-555-345-6789"
+        ssm_session_preferences_enabled: true
+        ssm_session_idle_timeout_minutes: 30
 ```
 
 <!-- prettier-ignore-start -->
