@@ -103,4 +103,12 @@ resource "aws_emr_block_public_access_configuration" "this" {
   count = local.enabled && var.emr_block_public_access_enabled ? 1 : 0
 
   block_public_security_group_rules = var.emr_block_public_security_group_rules
+
+  dynamic "permitted_public_security_group_rule_range" {
+    for_each = var.emr_permitted_public_security_group_rule_ranges
+    content {
+      min_range = permitted_public_security_group_rule_range.value.min_range
+      max_range = permitted_public_security_group_rule_range.value.max_range
+    }
+  }
 }
