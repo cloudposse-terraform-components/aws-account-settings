@@ -37,3 +37,33 @@ output "ssm_session_idle_timeout_minutes" {
   value       = var.ssm_session_preferences_enabled ? var.ssm_session_idle_timeout_minutes : null
   description = "The configured SSM session idle timeout in minutes"
 }
+
+output "ebs_snapshot_block_public_access_configured" {
+  value       = local.enabled && var.ebs_snapshot_block_public_access_enabled
+  description = "Whether EBS snapshot block public access was configured"
+}
+
+output "ebs_snapshot_block_public_access_state" {
+  value       = var.ebs_snapshot_block_public_access_enabled ? var.ebs_snapshot_block_public_access_state : null
+  description = "The state of EBS snapshot block public access"
+}
+
+output "ec2_instance_metadata_defaults_configured" {
+  value       = local.enabled && var.ec2_instance_metadata_defaults_enabled
+  description = "Whether EC2 instance metadata defaults were configured"
+}
+
+output "ec2_image_block_public_access_configured" {
+  value       = local.enabled && var.ec2_image_block_public_access_enabled
+  description = "Whether EC2 AMI block public access was configured"
+}
+
+output "ec2_image_block_public_access_state" {
+  value       = var.ec2_image_block_public_access_enabled ? var.ec2_image_block_public_access_state : null
+  description = "The state of EC2 AMI block public access"
+}
+
+output "emr_block_public_access_configured" {
+  value       = local.enabled && var.emr_block_public_access_enabled
+  description = "Whether EMR block public access was configured"
+}

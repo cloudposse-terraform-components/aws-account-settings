@@ -3,7 +3,7 @@ name: "aws-account-settings"
 github_repo: "cloudposse-terraform-components/aws-account-settings"
 # Short description of this project
 description: |-
-  This component is responsible for provisioning account level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, and SSM session preferences.
+  This component is responsible for provisioning account level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, SSM session preferences, EBS snapshot block public access, EC2 instance metadata defaults, EC2 AMI block public access, and EMR block public access configuration.
 usage: |-
   **Stack Level**: Global
 
@@ -20,6 +20,10 @@ usage: |-
           account_alias_enabled: true
           s3_block_public_access_enabled: true
           ebs_default_encryption_enabled: true
+          ebs_snapshot_block_public_access_enabled: true
+          ec2_instance_metadata_defaults_enabled: true
+          ec2_image_block_public_access_enabled: true
+          emr_block_public_access_enabled: true
           billing_contact:
             name: "John Doe"
             title: "CFO" 

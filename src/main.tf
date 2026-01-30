@@ -77,3 +77,30 @@ resource "aws_ssm_document" "session_manager_prefs" {
 
   tags = module.this.tags
 }
+
+resource "aws_ebs_snapshot_block_public_access" "this" {
+  count = local.enabled && var.ebs_snapshot_block_public_access_enabled ? 1 : 0
+
+  state = var.ebs_snapshot_block_public_access_state
+}
+
+resource "aws_ec2_instance_metadata_defaults" "this" {
+  count = local.enabled && var.ec2_instance_metadata_defaults_enabled ? 1 : 0
+
+  http_endpoint               = var.ec2_instance_metadata_http_endpoint
+  http_tokens                 = var.ec2_instance_metadata_http_tokens
+  http_put_response_hop_limit = var.ec2_instance_metadata_http_put_response_hop_limit
+  instance_metadata_tags      = var.ec2_instance_metadata_tags
+}
+
+resource "aws_ec2_image_block_public_access" "this" {
+  count = local.enabled && var.ec2_image_block_public_access_enabled ? 1 : 0
+
+  state = var.ec2_image_block_public_access_state
+}
+
+resource "aws_emr_block_public_access_configuration" "this" {
+  count = local.enabled && var.emr_block_public_access_enabled ? 1 : 0
+
+  block_public_security_group_rules = var.emr_block_public_security_group_rules
+}

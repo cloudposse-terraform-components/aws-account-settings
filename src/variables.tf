@@ -106,3 +106,99 @@ variable "ssm_session_idle_timeout_minutes" {
     error_message = "ssm_session_idle_timeout_minutes must be between 1 and 60 minutes."
   }
 }
+
+variable "ebs_snapshot_block_public_access_enabled" {
+  type        = bool
+  description = "Whether to enable EBS snapshot block public access"
+  default     = true
+}
+
+variable "ebs_snapshot_block_public_access_state" {
+  type        = string
+  description = "The state of EBS snapshot block public access. Valid values are 'block-all-sharing' and 'block-new-sharing'."
+  default     = "block-all-sharing"
+
+  validation {
+    condition     = contains(["block-all-sharing", "block-new-sharing"], var.ebs_snapshot_block_public_access_state)
+    error_message = "ebs_snapshot_block_public_access_state must be either 'block-all-sharing' or 'block-new-sharing'."
+  }
+}
+
+variable "ec2_instance_metadata_defaults_enabled" {
+  type        = bool
+  description = "Whether to configure EC2 instance metadata defaults"
+  default     = true
+}
+
+variable "ec2_instance_metadata_http_endpoint" {
+  type        = string
+  description = "Whether the instance metadata service is available. Valid values are 'enabled' and 'disabled'."
+  default     = "enabled"
+
+  validation {
+    condition     = contains(["enabled", "disabled"], var.ec2_instance_metadata_http_endpoint)
+    error_message = "ec2_instance_metadata_http_endpoint must be either 'enabled' or 'disabled'."
+  }
+}
+
+variable "ec2_instance_metadata_http_tokens" {
+  type        = string
+  description = "Whether the instance metadata service requires session tokens (IMDSv2). Valid values are 'required' and 'optional'."
+  default     = "required"
+
+  validation {
+    condition     = contains(["required", "optional"], var.ec2_instance_metadata_http_tokens)
+    error_message = "ec2_instance_metadata_http_tokens must be either 'required' or 'optional'."
+  }
+}
+
+variable "ec2_instance_metadata_http_put_response_hop_limit" {
+  type        = number
+  description = "The desired HTTP PUT response hop limit for instance metadata requests. Valid values are between 1 and 64."
+  default     = 1
+
+  validation {
+    condition     = var.ec2_instance_metadata_http_put_response_hop_limit >= 1 && var.ec2_instance_metadata_http_put_response_hop_limit <= 64
+    error_message = "ec2_instance_metadata_http_put_response_hop_limit must be between 1 and 64."
+  }
+}
+
+variable "ec2_instance_metadata_tags" {
+  type        = string
+  description = "Whether to enable access to instance tags from the instance metadata service. Valid values are 'enabled' and 'disabled'."
+  default     = "enabled"
+
+  validation {
+    condition     = contains(["enabled", "disabled"], var.ec2_instance_metadata_tags)
+    error_message = "ec2_instance_metadata_tags must be either 'enabled' or 'disabled'."
+  }
+}
+
+variable "ec2_image_block_public_access_enabled" {
+  type        = bool
+  description = "Whether to enable EC2 AMI block public access"
+  default     = true
+}
+
+variable "ec2_image_block_public_access_state" {
+  type        = string
+  description = "The state of EC2 AMI block public access. Valid values are 'block-new-sharing' and 'unblocked'."
+  default     = "block-new-sharing"
+
+  validation {
+    condition     = contains(["block-new-sharing", "unblocked"], var.ec2_image_block_public_access_state)
+    error_message = "ec2_image_block_public_access_state must be either 'block-new-sharing' or 'unblocked'."
+  }
+}
+
+variable "emr_block_public_access_enabled" {
+  type        = bool
+  description = "Whether to configure EMR block public access"
+  default     = true
+}
+
+variable "emr_block_public_security_group_rules" {
+  type        = bool
+  description = "Whether to block EMR clusters from being created with public security group rules"
+  default     = true
+}
