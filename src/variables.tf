@@ -158,8 +158,8 @@ variable "ec2_instance_metadata_http_put_response_hop_limit" {
   default     = 1
 
   validation {
-    condition     = var.ec2_instance_metadata_http_put_response_hop_limit >= 1 && var.ec2_instance_metadata_http_put_response_hop_limit <= 64
-    error_message = "ec2_instance_metadata_http_put_response_hop_limit must be between 1 and 64."
+    condition     = var.ec2_instance_metadata_http_put_response_hop_limit == -1 || (var.ec2_instance_metadata_http_put_response_hop_limit >= 1 && var.ec2_instance_metadata_http_put_response_hop_limit <= 64)
+    error_message = "ec2_instance_metadata_http_put_response_hop_limit must be -1 for no preference, or between 1 and 64."
   }
 }
 
@@ -169,8 +169,8 @@ variable "ec2_instance_metadata_tags" {
   default     = "enabled"
 
   validation {
-    condition     = var.ec2_instance_metadata_http_put_response_hop_limit == -1 || (var.ec2_instance_metadata_http_put_response_hop_limit >= 1 && var.ec2_instance_metadata_http_put_response_hop_limit <= 64)
-    error_message = "ec2_instance_metadata_http_put_response_hop_limit must be -1 for no preference, or between 1 and 64."
+    condition     = contains(["enabled", "disabled", "no-preference"], var.ec2_instance_metadata_tags)
+    error_message = "ec2_instance_metadata_tags must be either 'enabled' or 'disabled' or 'no-preference'."
   }
 }
 
