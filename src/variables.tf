@@ -154,7 +154,7 @@ variable "ec2_instance_metadata_http_tokens" {
 
 variable "ec2_instance_metadata_http_put_response_hop_limit" {
   type        = number
-  description = "The desired HTTP PUT response hop limit for instance metadata requests. Valid values are between 1 and 64."
+  description = "The desired HTTP PUT response hop limit for instance metadata requests. Valid values are between 1 and 64, or -1 for no preference."
   default     = 1
 
   validation {
@@ -169,8 +169,8 @@ variable "ec2_instance_metadata_tags" {
   default     = "enabled"
 
   validation {
-    condition     = contains(["enabled", "disabled", "no-preference"], var.ec2_instance_metadata_tags)
-    error_message = "ec2_instance_metadata_tags must be either 'enabled' or 'disabled' or 'no-preference'."
+    condition     = var.ec2_instance_metadata_http_put_response_hop_limit == -1 || (var.ec2_instance_metadata_http_put_response_hop_limit >= 1 && var.ec2_instance_metadata_http_put_response_hop_limit <= 64)
+    error_message = "ec2_instance_metadata_http_put_response_hop_limit must be -1 for no preference, or between 1 and 64."
   }
 }
 
