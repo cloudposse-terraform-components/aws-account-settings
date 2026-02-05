@@ -8,7 +8,7 @@ tags:
 
 # Component: `account-settings`
 
-This component is responsible for provisioning account level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, and SSM session preferences.
+This component is responsible for provisioning account-level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, SSM session preferences, EBS snapshot block public access, EC2 instance metadata defaults, EC2 AMI block public access, and EMR block public access configuration.
 ## Usage
 
 **Stack Level**: Global
@@ -26,6 +26,10 @@ components:
         account_alias_enabled: true
         s3_block_public_access_enabled: true
         ebs_default_encryption_enabled: true
+        ebs_snapshot_block_public_access_enabled: true
+        ec2_instance_metadata_defaults_enabled: true
+        ec2_image_block_public_access_enabled: true
+        emr_block_public_access_enabled: true
         billing_contact:
           name: "John Doe"
           title: "CFO" 
@@ -55,13 +59,13 @@ components:
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.7.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.9.0, < 6.0.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.0.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.9.0, < 6.0.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0.0 |
 
 ## Modules
 
@@ -78,6 +82,10 @@ components:
 | [aws_account_alternate_contact.security](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/account_alternate_contact) | resource |
 | [aws_ebs_default_kms_key.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_default_kms_key) | resource |
 | [aws_ebs_encryption_by_default.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_encryption_by_default) | resource |
+| [aws_ebs_snapshot_block_public_access.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_snapshot_block_public_access) | resource |
+| [aws_ec2_image_block_public_access.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ec2_image_block_public_access) | resource |
+| [aws_ec2_instance_metadata_defaults.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ec2_instance_metadata_defaults) | resource |
+| [aws_emr_block_public_access_configuration.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/emr_block_public_access_configuration) | resource |
 | [aws_iam_account_alias.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_account_alias) | resource |
 | [aws_s3_account_public_access_block.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_account_public_access_block) | resource |
 | [aws_ssm_document.session_manager_prefs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_document) | resource |
@@ -96,6 +104,18 @@ components:
 | <a name="input_descriptor_formats"></a> [descriptor\_formats](#input\_descriptor\_formats) | Describe additional descriptors to be output in the `descriptors` output map.<br/>Map of maps. Keys are names of descriptors. Values are maps of the form<br/>`{<br/>  format = string<br/>  labels = list(string)<br/>}`<br/>(Type is `any` so the map values can later be enhanced to provide additional options.)<br/>`format` is a Terraform format string to be passed to the `format()` function.<br/>`labels` is a list of labels, in order, to pass to `format()` function.<br/>Label values will be normalized before being passed to `format()` so they will be<br/>identical to how they appear in `id`.<br/>Default is `{}` (`descriptors` output will be empty). | `any` | `{}` | no |
 | <a name="input_ebs_default_encryption_enabled"></a> [ebs\_default\_encryption\_enabled](#input\_ebs\_default\_encryption\_enabled) | Whether to enable EBS default encryption | `bool` | `true` | no |
 | <a name="input_ebs_default_kms_key_arn"></a> [ebs\_default\_kms\_key\_arn](#input\_ebs\_default\_kms\_key\_arn) | The ARN of the KMS key for EBS default encryption. If not set, uses the AWS-managed key. | `string` | `null` | no |
+| <a name="input_ebs_snapshot_block_public_access_enabled"></a> [ebs\_snapshot\_block\_public\_access\_enabled](#input\_ebs\_snapshot\_block\_public\_access\_enabled) | Whether to enable EBS snapshot block public access | `bool` | `true` | no |
+| <a name="input_ebs_snapshot_block_public_access_state"></a> [ebs\_snapshot\_block\_public\_access\_state](#input\_ebs\_snapshot\_block\_public\_access\_state) | The state of EBS snapshot block public access. Valid values are 'block-all-sharing', 'block-new-sharing', and 'unblocked'. | `string` | `"block-all-sharing"` | no |
+| <a name="input_ec2_image_block_public_access_enabled"></a> [ec2\_image\_block\_public\_access\_enabled](#input\_ec2\_image\_block\_public\_access\_enabled) | Whether to enable EC2 AMI block public access | `bool` | `true` | no |
+| <a name="input_ec2_image_block_public_access_state"></a> [ec2\_image\_block\_public\_access\_state](#input\_ec2\_image\_block\_public\_access\_state) | The state of EC2 AMI block public access. Valid values are 'block-new-sharing' and 'unblocked'. | `string` | `"block-new-sharing"` | no |
+| <a name="input_ec2_instance_metadata_defaults_enabled"></a> [ec2\_instance\_metadata\_defaults\_enabled](#input\_ec2\_instance\_metadata\_defaults\_enabled) | Whether to configure EC2 instance metadata defaults | `bool` | `true` | no |
+| <a name="input_ec2_instance_metadata_http_endpoint"></a> [ec2\_instance\_metadata\_http\_endpoint](#input\_ec2\_instance\_metadata\_http\_endpoint) | Whether the instance metadata service is available. Valid values are 'enabled', 'disabled', and 'no-preference'. | `string` | `"enabled"` | no |
+| <a name="input_ec2_instance_metadata_http_put_response_hop_limit"></a> [ec2\_instance\_metadata\_http\_put\_response\_hop\_limit](#input\_ec2\_instance\_metadata\_http\_put\_response\_hop\_limit) | The desired HTTP PUT response hop limit for instance metadata requests. Valid values are between 1 and 64, or -1 for no preference. | `number` | `1` | no |
+| <a name="input_ec2_instance_metadata_http_tokens"></a> [ec2\_instance\_metadata\_http\_tokens](#input\_ec2\_instance\_metadata\_http\_tokens) | Whether the instance metadata service requires session tokens (IMDSv2). Valid values are 'required', 'optional', and 'no-preference'. | `string` | `"required"` | no |
+| <a name="input_ec2_instance_metadata_tags"></a> [ec2\_instance\_metadata\_tags](#input\_ec2\_instance\_metadata\_tags) | Whether to enable access to instance tags from the instance metadata service. Valid values are 'enabled', 'disabled', and 'no-preference'. | `string` | `"enabled"` | no |
+| <a name="input_emr_block_public_access_enabled"></a> [emr\_block\_public\_access\_enabled](#input\_emr\_block\_public\_access\_enabled) | Whether to configure EMR block public access | `bool` | `true` | no |
+| <a name="input_emr_block_public_security_group_rules"></a> [emr\_block\_public\_security\_group\_rules](#input\_emr\_block\_public\_security\_group\_rules) | Whether to block EMR clusters from being created with public security group rules | `bool` | `true` | no |
+| <a name="input_emr_permitted_public_security_group_rule_ranges"></a> [emr\_permitted\_public\_security\_group\_rule\_ranges](#input\_emr\_permitted\_public\_security\_group\_rule\_ranges) | List of permitted port ranges for public security group rules in EMR. Each object must have min\_range and max\_range. Default is an empty list (no permitted ranges). | <pre>list(object({<br/>    min_range = number<br/>    max_range = number<br/>  }))</pre> | `[]` | no |
 | <a name="input_enabled"></a> [enabled](#input\_enabled) | Set to false to prevent the module from creating any resources | `bool` | `null` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | ID element. Usually used for region e.g. 'uw2', 'us-west-2', OR role 'prod', 'staging', 'dev', 'UAT' | `string` | `null` | no |
 | <a name="input_id_length_limit"></a> [id\_length\_limit](#input\_id\_length\_limit) | Limit `id` to this many characters (minimum 6).<br/>Set to `0` for unlimited length.<br/>Set to `null` for keep the existing setting, which defaults to `0`.<br/>Does not affect `id_full`. | `number` | `null` | no |
@@ -128,6 +148,12 @@ components:
 | <a name="output_account_alias"></a> [account\_alias](#output\_account\_alias) | The IAM account alias |
 | <a name="output_billing_contact_configured"></a> [billing\_contact\_configured](#output\_billing\_contact\_configured) | Whether billing contact was configured |
 | <a name="output_ebs_encryption_configured"></a> [ebs\_encryption\_configured](#output\_ebs\_encryption\_configured) | Whether EBS default encryption was configured |
+| <a name="output_ebs_snapshot_block_public_access_configured"></a> [ebs\_snapshot\_block\_public\_access\_configured](#output\_ebs\_snapshot\_block\_public\_access\_configured) | Whether EBS snapshot block public access was configured |
+| <a name="output_ebs_snapshot_block_public_access_state"></a> [ebs\_snapshot\_block\_public\_access\_state](#output\_ebs\_snapshot\_block\_public\_access\_state) | The state of EBS snapshot block public access |
+| <a name="output_ec2_image_block_public_access_configured"></a> [ec2\_image\_block\_public\_access\_configured](#output\_ec2\_image\_block\_public\_access\_configured) | Whether EC2 AMI block public access was configured |
+| <a name="output_ec2_image_block_public_access_state"></a> [ec2\_image\_block\_public\_access\_state](#output\_ec2\_image\_block\_public\_access\_state) | The state of EC2 AMI block public access |
+| <a name="output_ec2_instance_metadata_defaults_configured"></a> [ec2\_instance\_metadata\_defaults\_configured](#output\_ec2\_instance\_metadata\_defaults\_configured) | Whether EC2 instance metadata defaults were configured |
+| <a name="output_emr_block_public_access_configured"></a> [emr\_block\_public\_access\_configured](#output\_emr\_block\_public\_access\_configured) | Whether EMR block public access was configured |
 | <a name="output_operations_contact_configured"></a> [operations\_contact\_configured](#output\_operations\_contact\_configured) | Whether operations contact was configured |
 | <a name="output_s3_public_access_block_configured"></a> [s3\_public\_access\_block\_configured](#output\_s3\_public\_access\_block\_configured) | Whether S3 public access block was configured |
 | <a name="output_security_contact_configured"></a> [security\_contact\_configured](#output\_security\_contact\_configured) | Whether security contact was configured |
