@@ -45,6 +45,24 @@ This component is responsible for provisioning account-level settings: AWS Accou
 > </details>
 
 
+## Introduction
+
+> [!WARNING]
+> The latest version of this component (version 2) assumes you have Atmos Auth set up, and it has a very simple `providers.tf`.
+>
+> If you are still using `aws-teams` and `team-roles`, update your `component.yaml` to use `providers.depth-1.tf` from
+> [cloudposse-terraform-components/mixins](https://github.com/cloudposse-terraform-components/mixins/blob/main/src/mixins/providers.depth-1.tf) via:
+>
+> ```yaml
+> mixins:
+>   # Use upstream mixin for providers.tf without account-map dependency
+>   - uri: https://raw.githubusercontent.com/cloudposse-terraform-components/mixins/{{ .Version }}/src/mixins/providers.depth-1.tf
+>     version: v0.3.2
+>     filename: providers.tf
+> ```
+>
+> to overwrite the current one.
+
 
 
 
