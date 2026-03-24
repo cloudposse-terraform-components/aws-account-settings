@@ -87,9 +87,10 @@ components:
         ec2_instance_metadata_defaults_enabled: true
         ec2_image_block_public_access_enabled: true
         emr_block_public_access_enabled: true
+        ssm_block_public_document_sharing: true
         billing_contact:
           name: "John Doe"
-          title: "CFO" 
+          title: "CFO"
           email_address: "billing@example.com"
           phone_number: "+1-555-123-4567"
         operations_contact:
