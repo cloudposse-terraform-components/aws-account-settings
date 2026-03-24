@@ -28,6 +28,11 @@ output "security_contact_configured" {
   description = "Whether security contact was configured"
 }
 
+output "ssm_block_public_document_sharing_configured" {
+  value       = local.enabled && var.ssm_block_public_document_sharing
+  description = "Whether SSM block public document sharing was configured"
+}
+
 output "ssm_session_preferences_configured" {
   value       = local.enabled && var.ssm_session_preferences_enabled
   description = "Whether SSM Session Manager preferences were configured"

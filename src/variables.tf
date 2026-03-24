@@ -90,6 +90,12 @@ variable "security_contact" {
   default     = null
 }
 
+variable "ssm_block_public_document_sharing" {
+  type        = bool
+  description = "Whether to block public document sharing in SSM"
+  default     = false
+}
+
 variable "ssm_session_preferences_enabled" {
   type        = bool
   description = "Whether to configure SSM Session Manager preferences (idle timeout)"

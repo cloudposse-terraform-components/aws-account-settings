@@ -106,6 +106,7 @@ components:
 | [aws_iam_account_alias.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_account_alias) | resource |
 | [aws_s3_account_public_access_block.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_account_public_access_block) | resource |
 | [aws_ssm_document.session_manager_prefs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_document) | resource |
+| [aws_ssm_service_setting.block_public_document_sharing](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_service_setting) | resource |
 
 ## Inputs
 
@@ -152,6 +153,7 @@ components:
 | <a name="input_s3_ignore_public_acls"></a> [s3\_ignore\_public\_acls](#input\_s3\_ignore\_public\_acls) | Whether to ignore public ACLs | `bool` | `true` | no |
 | <a name="input_s3_restrict_public_buckets"></a> [s3\_restrict\_public\_buckets](#input\_s3\_restrict\_public\_buckets) | Whether to restrict public buckets | `bool` | `true` | no |
 | <a name="input_security_contact"></a> [security\_contact](#input\_security\_contact) | Security alternate contact information | <pre>object({<br/>    name          = string<br/>    title         = string<br/>    email_address = string<br/>    phone_number  = string<br/>  })</pre> | `null` | no |
+| <a name="input_ssm_block_public_document_sharing"></a> [ssm\_block\_public\_document\_sharing](#input\_ssm\_block\_public\_document\_sharing) | Whether to block public document sharing in SSM | `bool` | `false` | no |
 | <a name="input_ssm_session_idle_timeout_minutes"></a> [ssm\_session\_idle\_timeout\_minutes](#input\_ssm\_session\_idle\_timeout\_minutes) | The idle session timeout in minutes for SSM Session Manager. AWS default is 20 minutes. | `number` | `20` | no |
 | <a name="input_ssm_session_preferences_enabled"></a> [ssm\_session\_preferences\_enabled](#input\_ssm\_session\_preferences\_enabled) | Whether to configure SSM Session Manager preferences (idle timeout) | `bool` | `false` | no |
 | <a name="input_stage"></a> [stage](#input\_stage) | ID element. Usually used to indicate role, e.g. 'prod', 'staging', 'source', 'build', 'test', 'deploy', 'release' | `string` | `null` | no |
@@ -174,6 +176,7 @@ components:
 | <a name="output_operations_contact_configured"></a> [operations\_contact\_configured](#output\_operations\_contact\_configured) | Whether operations contact was configured |
 | <a name="output_s3_public_access_block_configured"></a> [s3\_public\_access\_block\_configured](#output\_s3\_public\_access\_block\_configured) | Whether S3 public access block was configured |
 | <a name="output_security_contact_configured"></a> [security\_contact\_configured](#output\_security\_contact\_configured) | Whether security contact was configured |
+| <a name="output_ssm_block_public_document_sharing_configured"></a> [ssm\_block\_public\_document\_sharing\_configured](#output\_ssm\_block\_public\_document\_sharing\_configured) | Whether SSM block public document sharing was configured |
 | <a name="output_ssm_session_idle_timeout_minutes"></a> [ssm\_session\_idle\_timeout\_minutes](#output\_ssm\_session\_idle\_timeout\_minutes) | The configured SSM session idle timeout in minutes |
 | <a name="output_ssm_session_preferences_configured"></a> [ssm\_session\_preferences\_configured](#output\_ssm\_session\_preferences\_configured) | Whether SSM Session Manager preferences were configured |
 <!-- markdownlint-restore -->

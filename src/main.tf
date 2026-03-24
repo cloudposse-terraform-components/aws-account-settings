@@ -112,3 +112,9 @@ resource "aws_emr_block_public_access_configuration" "this" {
     }
   }
 }
+
+resource "aws_ssm_service_setting" "block_public_document_sharing" {
+  count         = local.enabled && var.ssm_block_public_document_sharing ? 1 : 0
+  setting_id    = "/ssm/documents/console/public-sharing-permission"
+  setting_value = "Disable"
+}
