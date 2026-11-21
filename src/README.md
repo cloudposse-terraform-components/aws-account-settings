@@ -8,7 +8,7 @@ tags:
 
 # Component: `account-settings`
 
-This component is responsible for provisioning account-level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, SSM session preferences, EBS snapshot block public access, EC2 instance metadata defaults, EC2 AMI block public access, and EMR block public access configuration.
+This component is responsible for provisioning account-level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, SSM session preferences, SSM Default Host Management Configuration, EBS snapshot block public access, EC2 instance metadata defaults, EC2 AMI block public access, and EMR block public access configuration.
 ## Introduction
 
 > [!WARNING]
@@ -67,6 +67,36 @@ components:
         ssm_session_idle_timeout_minutes: 30
 ```
 
+### SSM Default Host Management Configuration
+
+[Default Host Management Configuration](https://docs.aws.amazon.com/systems-manager/latest/userguide/fleet-manager-default-host-management-configuration.html)
+lets Systems Manager manage every EC2 instance in the account and Region without an instance profile. Instances must
+use IMDSv2 and run SSM Agent 3.2.582.0 or later.
+
+The IAM role is global but the service setting is Regional and must be turned on in each Region. When this component
+is deployed to several Regions of the same account, create the role in one Region only:
+
+```yaml
+# Home Region (for example, the us-east-1 stack): creates the role and turns the setting on
+components:
+  terraform:
+    account-settings:
+      vars:
+        ssm_default_host_management_enabled: true
+
+# Every other Region: turns the setting on and references the existing role by name
+components:
+  terraform:
+    account-settings:
+      vars:
+        ssm_default_host_management_enabled: true
+        ssm_default_host_management_create_role: false
+```
+
+Set `ssm_default_host_management_create_role: false` everywhere and `ssm_default_host_management_role_name` /
+`ssm_default_host_management_role_path` to use a role managed elsewhere. Destroying the component, or setting
+`ssm_default_host_management_enabled: false`, resets the service setting, which turns the feature off in that Region.
+
 <!-- prettier-ignore-start -->
 <!-- prettier-ignore-end -->
 
@@ -105,9 +135,13 @@ components:
 | [aws_ec2_instance_metadata_defaults.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ec2_instance_metadata_defaults) | resource |
 | [aws_emr_block_public_access_configuration.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/emr_block_public_access_configuration) | resource |
 | [aws_iam_account_alias.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_account_alias) | resource |
+| [aws_iam_role.ssm_default_host_management](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy_attachment.ssm_default_host_management](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_s3_account_public_access_block.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_account_public_access_block) | resource |
 | [aws_ssm_document.session_manager_prefs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_document) | resource |
 | [aws_ssm_service_setting.block_public_document_sharing](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_service_setting) | resource |
+| [aws_ssm_service_setting.default_host_management](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_service_setting) | resource |
+| [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
 
 ## Inputs
 
@@ -155,6 +189,10 @@ components:
 | <a name="input_s3_restrict_public_buckets"></a> [s3\_restrict\_public\_buckets](#input\_s3\_restrict\_public\_buckets) | Whether to restrict public buckets | `bool` | `true` | no |
 | <a name="input_security_contact"></a> [security\_contact](#input\_security\_contact) | Security alternate contact information | <pre>object({<br/>    name          = string<br/>    title         = string<br/>    email_address = string<br/>    phone_number  = string<br/>  })</pre> | `null` | no |
 | <a name="input_ssm_block_public_document_sharing"></a> [ssm\_block\_public\_document\_sharing](#input\_ssm\_block\_public\_document\_sharing) | Whether to block public document sharing in SSM | `bool` | `false` | no |
+| <a name="input_ssm_default_host_management_create_role"></a> [ssm\_default\_host\_management\_create\_role](#input\_ssm\_default\_host\_management\_create\_role) | Whether to create the IAM role used by Default Host Management Configuration. IAM roles are global, so when this<br/>component is deployed to several Regions of the same account, set this to `true` in one Region only and to `false`<br/>in the others (they reference the role by name). Only used when `ssm_default_host_management_enabled` is `true`. | `bool` | `true` | no |
+| <a name="input_ssm_default_host_management_enabled"></a> [ssm\_default\_host\_management\_enabled](#input\_ssm\_default\_host\_management\_enabled) | Whether to turn on SSM Default Host Management Configuration in this Region by setting the<br/>`/ssm/managed-instance/default-ec2-instance-management-role` service setting. The service setting is Regional and<br/>must be turned on in every Region where EC2 instances should be managed. | `bool` | `false` | no |
+| <a name="input_ssm_default_host_management_role_name"></a> [ssm\_default\_host\_management\_role\_name](#input\_ssm\_default\_host\_management\_role\_name) | Name of the IAM role used by Default Host Management Configuration | `string` | `"AWSSystemsManagerDefaultEC2InstanceManagementRole"` | no |
+| <a name="input_ssm_default_host_management_role_path"></a> [ssm\_default\_host\_management\_role\_path](#input\_ssm\_default\_host\_management\_role\_path) | IAM path of the Default Host Management Configuration role. Must begin and end with `/`. | `string` | `"/service-role/"` | no |
 | <a name="input_ssm_session_idle_timeout_minutes"></a> [ssm\_session\_idle\_timeout\_minutes](#input\_ssm\_session\_idle\_timeout\_minutes) | The idle session timeout in minutes for SSM Session Manager. AWS default is 20 minutes. | `number` | `20` | no |
 | <a name="input_ssm_session_preferences_enabled"></a> [ssm\_session\_preferences\_enabled](#input\_ssm\_session\_preferences\_enabled) | Whether to configure SSM Session Manager preferences (idle timeout) | `bool` | `false` | no |
 | <a name="input_stage"></a> [stage](#input\_stage) | ID element. Usually used to indicate role, e.g. 'prod', 'staging', 'source', 'build', 'test', 'deploy', 'release' | `string` | `null` | no |
@@ -178,6 +216,8 @@ components:
 | <a name="output_s3_public_access_block_configured"></a> [s3\_public\_access\_block\_configured](#output\_s3\_public\_access\_block\_configured) | Whether S3 public access block was configured |
 | <a name="output_security_contact_configured"></a> [security\_contact\_configured](#output\_security\_contact\_configured) | Whether security contact was configured |
 | <a name="output_ssm_block_public_document_sharing_configured"></a> [ssm\_block\_public\_document\_sharing\_configured](#output\_ssm\_block\_public\_document\_sharing\_configured) | Whether SSM block public document sharing was configured |
+| <a name="output_ssm_default_host_management_configured"></a> [ssm\_default\_host\_management\_configured](#output\_ssm\_default\_host\_management\_configured) | Whether SSM Default Host Management Configuration was turned on in this Region |
+| <a name="output_ssm_default_host_management_role_arn"></a> [ssm\_default\_host\_management\_role\_arn](#output\_ssm\_default\_host\_management\_role\_arn) | ARN of the Default Host Management Configuration IAM role, when created by this component |
 | <a name="output_ssm_session_idle_timeout_minutes"></a> [ssm\_session\_idle\_timeout\_minutes](#output\_ssm\_session\_idle\_timeout\_minutes) | The configured SSM session idle timeout in minutes |
 | <a name="output_ssm_session_preferences_configured"></a> [ssm\_session\_preferences\_configured](#output\_ssm\_session\_preferences\_configured) | Whether SSM Session Manager preferences were configured |
 <!-- markdownlint-restore -->

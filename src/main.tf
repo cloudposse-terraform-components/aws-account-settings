@@ -118,3 +118,53 @@ resource "aws_ssm_service_setting" "block_public_document_sharing" {
   setting_id    = "/ssm/documents/console/public-sharing-permission"
   setting_value = "Disable"
 }
+
+# SSM Default Host Management Configuration
+# https://docs.aws.amazon.com/systems-manager/latest/userguide/fleet-manager-default-host-management-configuration.html
+locals {
+  ssm_dhmc_enabled     = local.enabled && var.ssm_default_host_management_enabled
+  ssm_dhmc_create_role = local.ssm_dhmc_enabled && var.ssm_default_host_management_create_role
+  # The service setting value is the path-qualified role name without the leading slash,
+  # e.g. "service-role/AWSSystemsManagerDefaultEC2InstanceManagementRole".
+  ssm_dhmc_role_value = trimprefix("${var.ssm_default_host_management_role_path}${var.ssm_default_host_management_role_name}", "/")
+}
+
+data "aws_partition" "current" {
+  count = local.ssm_dhmc_create_role ? 1 : 0
+}
+
+resource "aws_iam_role" "ssm_default_host_management" {
+  count = local.ssm_dhmc_create_role ? 1 : 0
+
+  name        = var.ssm_default_host_management_role_name
+  path        = var.ssm_default_host_management_role_path
+  description = "Systems Manager Default Host Management Configuration role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "ssm.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+
+  tags = module.this.tags
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_default_host_management" {
+  count = local.ssm_dhmc_create_role ? 1 : 0
+
+  role       = aws_iam_role.ssm_default_host_management[0].name
+  policy_arn = "arn:${data.aws_partition.current[0].partition}:iam::aws:policy/AmazonSSMManagedEC2InstanceDefaultPolicy"
+}
+
+# Destroying this resource resets the service setting, which turns Default Host Management Configuration off.
+resource "aws_ssm_service_setting" "default_host_management" {
+  count = local.ssm_dhmc_enabled ? 1 : 0
+
+  setting_id    = "/ssm/managed-instance/default-ec2-instance-management-role"
+  setting_value = local.ssm_dhmc_role_value
+
+  depends_on = [aws_iam_role_policy_attachment.ssm_default_host_management]
+}

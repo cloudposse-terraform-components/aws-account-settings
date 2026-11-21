@@ -20,7 +20,7 @@ introduction: |-
   > to overwrite the current one.
 
 description: |-
-  This component is responsible for provisioning account-level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, SSM session preferences, EBS snapshot block public access, EC2 instance metadata defaults, EC2 AMI block public access, and EMR block public access configuration.
+  This component is responsible for provisioning account-level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, SSM session preferences, SSM Default Host Management Configuration, EBS snapshot block public access, EC2 instance metadata defaults, EC2 AMI block public access, and EMR block public access configuration.
 usage: |-
   **Stack Level**: Global
 
@@ -60,6 +60,36 @@ usage: |-
           ssm_session_preferences_enabled: true
           ssm_session_idle_timeout_minutes: 30
   ```
+
+  ### SSM Default Host Management Configuration
+
+  [Default Host Management Configuration](https://docs.aws.amazon.com/systems-manager/latest/userguide/fleet-manager-default-host-management-configuration.html)
+  lets Systems Manager manage every EC2 instance in the account and Region without an instance profile. Instances must
+  use IMDSv2 and run SSM Agent 3.2.582.0 or later.
+
+  The IAM role is global but the service setting is Regional and must be turned on in each Region. When this component
+  is deployed to several Regions of the same account, create the role in one Region only:
+
+  ```yaml
+  # Home Region (for example, the us-east-1 stack): creates the role and turns the setting on
+  components:
+    terraform:
+      account-settings:
+        vars:
+          ssm_default_host_management_enabled: true
+
+  # Every other Region: turns the setting on and references the existing role by name
+  components:
+    terraform:
+      account-settings:
+        vars:
+          ssm_default_host_management_enabled: true
+          ssm_default_host_management_create_role: false
+  ```
+
+  Set `ssm_default_host_management_create_role: false` everywhere and `ssm_default_host_management_role_name` /
+  `ssm_default_host_management_role_path` to use a role managed elsewhere. Destroying the component, or setting
+  `ssm_default_host_management_enabled: false`, resets the service setting, which turns the feature off in that Region.
 
   <!-- prettier-ignore-start -->
   <!-- prettier-ignore-end -->

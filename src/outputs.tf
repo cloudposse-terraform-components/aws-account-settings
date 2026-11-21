@@ -72,3 +72,13 @@ output "emr_block_public_access_configured" {
   value       = local.enabled && var.emr_block_public_access_enabled
   description = "Whether EMR block public access was configured"
 }
+
+output "ssm_default_host_management_configured" {
+  value       = local.ssm_dhmc_enabled
+  description = "Whether SSM Default Host Management Configuration was turned on in this Region"
+}
+
+output "ssm_default_host_management_role_arn" {
+  value       = one(aws_iam_role.ssm_default_host_management[*].arn)
+  description = "ARN of the Default Host Management Configuration IAM role, when created by this component"
+}
