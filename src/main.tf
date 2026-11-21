@@ -1,5 +1,31 @@
 locals {
   enabled = module.this.enabled
+
+  # Session Manager preferences: only options that are set are added, so the document is unchanged when none are.
+  # A list of optional objects (instead of `cond ? {...} : {}`) keeps boolean values as JSON booleans.
+  ssm_session_input_parts = [
+    { idleSessionTimeout = tostring(var.ssm_session_idle_timeout_minutes) },
+    var.ssm_session_s3_bucket_name == null ? null : {
+      s3BucketName        = var.ssm_session_s3_bucket_name
+      s3EncryptionEnabled = var.ssm_session_s3_encryption_enabled
+    },
+    var.ssm_session_s3_bucket_name == null || var.ssm_session_s3_key_prefix == null ? null : {
+      s3KeyPrefix = var.ssm_session_s3_key_prefix
+    },
+    var.ssm_session_cloudwatch_log_group_name == null ? null : {
+      cloudWatchLogGroupName      = var.ssm_session_cloudwatch_log_group_name
+      cloudWatchEncryptionEnabled = var.ssm_session_cloudwatch_encryption_enabled
+      cloudWatchStreamingEnabled  = var.ssm_session_cloudwatch_streaming_enabled
+    },
+    var.ssm_session_kms_key_id == null ? null : {
+      kmsKeyId = var.ssm_session_kms_key_id
+    },
+    var.ssm_session_run_as_default_user == null ? null : {
+      runAsEnabled     = true
+      runAsDefaultUser = var.ssm_session_run_as_default_user
+    },
+  ]
+  ssm_session_inputs = merge([for part in local.ssm_session_input_parts : part if part != null]...)
 }
 
 resource "aws_iam_account_alias" "this" {
@@ -70,12 +96,24 @@ resource "aws_ssm_document" "session_manager_prefs" {
     schemaVersion = "1.0"
     description   = "Managed by Terraform"
     sessionType   = "Standard_Stream"
-    inputs = {
-      idleSessionTimeout = tostring(var.ssm_session_idle_timeout_minutes)
-    }
+    inputs        = local.ssm_session_inputs
   })
 
   tags = module.this.tags
+}
+
+resource "aws_ssm_service_setting" "automation_log_destination" {
+  count = local.enabled && var.ssm_automation_cloudwatch_logging_enabled ? 1 : 0
+
+  setting_id    = "/ssm/automation/customer-script-log-destination"
+  setting_value = "CloudWatch"
+}
+
+resource "aws_ssm_service_setting" "automation_log_group_name" {
+  count = local.enabled && var.ssm_automation_cloudwatch_logging_enabled && var.ssm_automation_cloudwatch_log_group_name != null ? 1 : 0
+
+  setting_id    = "/ssm/automation/customer-script-log-group-name"
+  setting_value = var.ssm_automation_cloudwatch_log_group_name
 }
 
 resource "aws_ebs_snapshot_block_public_access" "this" {

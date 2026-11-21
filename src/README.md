@@ -8,7 +8,7 @@ tags:
 
 # Component: `account-settings`
 
-This component is responsible for provisioning account-level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, SSM session preferences, EBS snapshot block public access, EC2 instance metadata defaults, EC2 AMI block public access, and EMR block public access configuration.
+This component is responsible for provisioning account-level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, SSM session preferences and session logging, SSM Automation logging, EBS snapshot block public access, EC2 instance metadata defaults, EC2 AMI block public access, and EMR block public access configuration.
 ## Introduction
 
 > [!WARNING]
@@ -67,6 +67,31 @@ components:
         ssm_session_idle_timeout_minutes: 30
 ```
 
+### SSM Session Manager logging and Automation logging
+
+Session Manager preferences can also send session logs to S3 and/or CloudWatch Logs, encrypt session data with KMS,
+and set a Run As user. Options left unset are not written to the preferences document, so it stays unchanged until
+one of them is set. The bucket, log group and KMS key must already exist, and the instance role needs permission to
+write to them.
+
+Automation logging sends the output of `aws:executeScript` actions to CloudWatch Logs (Security Hub control SSM.6).
+Both are Regional, like the other SSM settings in this component.
+
+```yaml
+components:
+  terraform:
+    account-settings:
+      vars:
+        ssm_session_preferences_enabled: true
+        ssm_session_s3_bucket_name: "acme-ssm-session-logs"
+        ssm_session_s3_key_prefix: "session-logs"
+        ssm_session_cloudwatch_log_group_name: "/aws/ssm/session-logs"
+        ssm_session_kms_key_id: "alias/ssm-sessions"
+        ssm_automation_cloudwatch_logging_enabled: true
+        # Optional; defaults to /aws/ssm/automation/executeScript
+        ssm_automation_cloudwatch_log_group_name: "/aws/ssm/automation"
+```
+
 <!-- prettier-ignore-start -->
 <!-- prettier-ignore-end -->
 
@@ -107,6 +132,8 @@ components:
 | [aws_iam_account_alias.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_account_alias) | resource |
 | [aws_s3_account_public_access_block.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_account_public_access_block) | resource |
 | [aws_ssm_document.session_manager_prefs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_document) | resource |
+| [aws_ssm_service_setting.automation_log_destination](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_service_setting) | resource |
+| [aws_ssm_service_setting.automation_log_group_name](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_service_setting) | resource |
 | [aws_ssm_service_setting.block_public_document_sharing](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_service_setting) | resource |
 
 ## Inputs
@@ -154,9 +181,19 @@ components:
 | <a name="input_s3_ignore_public_acls"></a> [s3\_ignore\_public\_acls](#input\_s3\_ignore\_public\_acls) | Whether to ignore public ACLs | `bool` | `true` | no |
 | <a name="input_s3_restrict_public_buckets"></a> [s3\_restrict\_public\_buckets](#input\_s3\_restrict\_public\_buckets) | Whether to restrict public buckets | `bool` | `true` | no |
 | <a name="input_security_contact"></a> [security\_contact](#input\_security\_contact) | Security alternate contact information | <pre>object({<br/>    name          = string<br/>    title         = string<br/>    email_address = string<br/>    phone_number  = string<br/>  })</pre> | `null` | no |
+| <a name="input_ssm_automation_cloudwatch_log_group_name"></a> [ssm\_automation\_cloudwatch\_log\_group\_name](#input\_ssm\_automation\_cloudwatch\_log\_group\_name) | CloudWatch Logs log group for Automation `aws:executeScript` output (service setting `/ssm/automation/customer-script-log-group-name`). Leave `null` to use the AWS default `/aws/ssm/automation/executeScript`. Only used when `ssm_automation_cloudwatch_logging_enabled` is `true`. | `string` | `null` | no |
+| <a name="input_ssm_automation_cloudwatch_logging_enabled"></a> [ssm\_automation\_cloudwatch\_logging\_enabled](#input\_ssm\_automation\_cloudwatch\_logging\_enabled) | Whether to send the output of Automation `aws:executeScript` actions to CloudWatch Logs (service setting `/ssm/automation/customer-script-log-destination`) | `bool` | `false` | no |
 | <a name="input_ssm_block_public_document_sharing"></a> [ssm\_block\_public\_document\_sharing](#input\_ssm\_block\_public\_document\_sharing) | Whether to block public document sharing in SSM | `bool` | `false` | no |
+| <a name="input_ssm_session_cloudwatch_encryption_enabled"></a> [ssm\_session\_cloudwatch\_encryption\_enabled](#input\_ssm\_session\_cloudwatch\_encryption\_enabled) | Whether Session Manager only sends session logs to the log group when the log group is encrypted | `bool` | `true` | no |
+| <a name="input_ssm_session_cloudwatch_log_group_name"></a> [ssm\_session\_cloudwatch\_log\_group\_name](#input\_ssm\_session\_cloudwatch\_log\_group\_name) | Name of the CloudWatch Logs log group that receives SSM Session Manager session logs. Leave `null` to turn off CloudWatch Logs logging. Only used when `ssm_session_preferences_enabled` is `true`. | `string` | `null` | no |
+| <a name="input_ssm_session_cloudwatch_streaming_enabled"></a> [ssm\_session\_cloudwatch\_streaming\_enabled](#input\_ssm\_session\_cloudwatch\_streaming\_enabled) | Whether session logs are streamed to CloudWatch Logs continuously (`true`) or uploaded when the session ends (`false`) | `bool` | `true` | no |
 | <a name="input_ssm_session_idle_timeout_minutes"></a> [ssm\_session\_idle\_timeout\_minutes](#input\_ssm\_session\_idle\_timeout\_minutes) | The idle session timeout in minutes for SSM Session Manager. AWS default is 20 minutes. | `number` | `20` | no |
+| <a name="input_ssm_session_kms_key_id"></a> [ssm\_session\_kms\_key\_id](#input\_ssm\_session\_kms\_key\_id) | ID or ARN of the KMS key used to encrypt session data between the client and managed nodes. Leave `null` to turn off KMS encryption of session data. | `string` | `null` | no |
 | <a name="input_ssm_session_preferences_enabled"></a> [ssm\_session\_preferences\_enabled](#input\_ssm\_session\_preferences\_enabled) | Whether to configure SSM Session Manager preferences (idle timeout) | `bool` | `false` | no |
+| <a name="input_ssm_session_run_as_default_user"></a> [ssm\_session\_run\_as\_default\_user](#input\_ssm\_session\_run\_as\_default\_user) | Operating system user that Linux and macOS sessions run as. Setting it turns on Run As support. Leave `null` to keep the default `ssm-user`. | `string` | `null` | no |
+| <a name="input_ssm_session_s3_bucket_name"></a> [ssm\_session\_s3\_bucket\_name](#input\_ssm\_session\_s3\_bucket\_name) | Name of the S3 bucket that receives SSM Session Manager session logs. Leave `null` to turn off S3 logging. Only used when `ssm_session_preferences_enabled` is `true`. | `string` | `null` | no |
+| <a name="input_ssm_session_s3_encryption_enabled"></a> [ssm\_session\_s3\_encryption\_enabled](#input\_ssm\_session\_s3\_encryption\_enabled) | Whether Session Manager only writes session logs to the S3 bucket when the bucket is encrypted | `bool` | `true` | no |
+| <a name="input_ssm_session_s3_key_prefix"></a> [ssm\_session\_s3\_key\_prefix](#input\_ssm\_session\_s3\_key\_prefix) | Key prefix for SSM Session Manager session logs in `ssm_session_s3_bucket_name` | `string` | `null` | no |
 | <a name="input_stage"></a> [stage](#input\_stage) | ID element. Usually used to indicate role, e.g. 'prod', 'staging', 'source', 'build', 'test', 'deploy', 'release' | `string` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Additional tags (e.g. `{'BusinessUnit': 'XYZ'}`).<br/>Neither the tag keys nor the tag values will be modified by this module. | `map(string)` | `{}` | no |
 | <a name="input_tenant"></a> [tenant](#input\_tenant) | ID element \_(Rarely used, not included by default)\_. A customer identifier, indicating who this instance of a resource is for | `string` | `null` | no |
@@ -177,8 +214,10 @@ components:
 | <a name="output_operations_contact_configured"></a> [operations\_contact\_configured](#output\_operations\_contact\_configured) | Whether operations contact was configured |
 | <a name="output_s3_public_access_block_configured"></a> [s3\_public\_access\_block\_configured](#output\_s3\_public\_access\_block\_configured) | Whether S3 public access block was configured |
 | <a name="output_security_contact_configured"></a> [security\_contact\_configured](#output\_security\_contact\_configured) | Whether security contact was configured |
+| <a name="output_ssm_automation_cloudwatch_logging_configured"></a> [ssm\_automation\_cloudwatch\_logging\_configured](#output\_ssm\_automation\_cloudwatch\_logging\_configured) | Whether SSM Automation output logging to CloudWatch Logs was configured |
 | <a name="output_ssm_block_public_document_sharing_configured"></a> [ssm\_block\_public\_document\_sharing\_configured](#output\_ssm\_block\_public\_document\_sharing\_configured) | Whether SSM block public document sharing was configured |
 | <a name="output_ssm_session_idle_timeout_minutes"></a> [ssm\_session\_idle\_timeout\_minutes](#output\_ssm\_session\_idle\_timeout\_minutes) | The configured SSM session idle timeout in minutes |
+| <a name="output_ssm_session_logging_configured"></a> [ssm\_session\_logging\_configured](#output\_ssm\_session\_logging\_configured) | Whether SSM Session Manager session logging (S3 or CloudWatch Logs) was configured |
 | <a name="output_ssm_session_preferences_configured"></a> [ssm\_session\_preferences\_configured](#output\_ssm\_session\_preferences\_configured) | Whether SSM Session Manager preferences were configured |
 <!-- markdownlint-restore -->
 
