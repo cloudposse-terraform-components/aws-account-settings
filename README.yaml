@@ -84,10 +84,10 @@ usage: |-
       account-settings:
         vars:
           ssm_default_host_management_enabled: true
-          ssm_default_host_management_create_role: false
+          ssm_default_host_management_role_enabled: false
   ```
 
-  Set `ssm_default_host_management_create_role: false` everywhere and `ssm_default_host_management_role_name` /
+  Set `ssm_default_host_management_role_enabled: false` everywhere and `ssm_default_host_management_role_name` /
   `ssm_default_host_management_role_path` to use a role managed elsewhere. Destroying the component, or setting
   `ssm_default_host_management_enabled: false`, resets the service setting, which turns the feature off in that Region.
 

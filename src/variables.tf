@@ -106,7 +106,7 @@ variable "ssm_default_host_management_enabled" {
   default     = false
 }
 
-variable "ssm_default_host_management_create_role" {
+variable "ssm_default_host_management_role_enabled" {
   type        = bool
   description = <<-EOT
     Whether to create the IAM role used by Default Host Management Configuration. IAM roles are global, so when this
