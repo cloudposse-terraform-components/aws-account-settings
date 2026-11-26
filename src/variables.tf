@@ -150,6 +150,66 @@ variable "ssm_session_idle_timeout_minutes" {
   }
 }
 
+variable "ssm_session_s3_bucket_name" {
+  type        = string
+  description = "Name of the S3 bucket that receives SSM Session Manager session logs. Leave `null` to turn off S3 logging. Only used when `ssm_session_preferences_enabled` is `true`."
+  default     = null
+}
+
+variable "ssm_session_s3_key_prefix" {
+  type        = string
+  description = "Key prefix for SSM Session Manager session logs in `ssm_session_s3_bucket_name`"
+  default     = null
+}
+
+variable "ssm_session_s3_encryption_enabled" {
+  type        = bool
+  description = "Whether Session Manager only writes session logs to the S3 bucket when the bucket is encrypted"
+  default     = true
+}
+
+variable "ssm_session_cloudwatch_log_group_name" {
+  type        = string
+  description = "Name of the CloudWatch Logs log group that receives SSM Session Manager session logs. Leave `null` to turn off CloudWatch Logs logging. Only used when `ssm_session_preferences_enabled` is `true`."
+  default     = null
+}
+
+variable "ssm_session_cloudwatch_encryption_enabled" {
+  type        = bool
+  description = "Whether Session Manager only sends session logs to the log group when the log group is encrypted"
+  default     = true
+}
+
+variable "ssm_session_cloudwatch_streaming_enabled" {
+  type        = bool
+  description = "Whether session logs are streamed to CloudWatch Logs continuously (`true`) or uploaded when the session ends (`false`)"
+  default     = true
+}
+
+variable "ssm_session_kms_key_id" {
+  type        = string
+  description = "ID or ARN of the KMS key used to encrypt session data between the client and managed nodes. Leave `null` to turn off KMS encryption of session data."
+  default     = null
+}
+
+variable "ssm_session_run_as_default_user" {
+  type        = string
+  description = "Operating system user that Linux and macOS sessions run as. Setting it turns on Run As support. Leave `null` to keep the default `ssm-user`."
+  default     = null
+}
+
+variable "ssm_automation_cloudwatch_logging_enabled" {
+  type        = bool
+  description = "Whether to send the output of Automation `aws:executeScript` actions to CloudWatch Logs (service setting `/ssm/automation/customer-script-log-destination`)"
+  default     = false
+}
+
+variable "ssm_automation_cloudwatch_log_group_name" {
+  type        = string
+  description = "CloudWatch Logs log group for Automation `aws:executeScript` output (service setting `/ssm/automation/customer-script-log-group-name`). Leave `null` to use the AWS default `/aws/ssm/automation/executeScript`. Only used when `ssm_automation_cloudwatch_logging_enabled` is `true`."
+  default     = null
+}
+
 variable "ebs_snapshot_block_public_access_enabled" {
   type        = bool
   description = "Whether to enable EBS snapshot block public access"

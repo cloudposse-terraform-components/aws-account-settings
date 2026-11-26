@@ -43,6 +43,16 @@ output "ssm_session_idle_timeout_minutes" {
   description = "The configured SSM session idle timeout in minutes"
 }
 
+output "ssm_session_logging_configured" {
+  value       = local.enabled && var.ssm_session_preferences_enabled && (var.ssm_session_s3_bucket_name != null || var.ssm_session_cloudwatch_log_group_name != null)
+  description = "Whether SSM Session Manager session logging (S3 or CloudWatch Logs) was configured"
+}
+
+output "ssm_automation_cloudwatch_logging_configured" {
+  value       = local.enabled && var.ssm_automation_cloudwatch_logging_enabled
+  description = "Whether SSM Automation output logging to CloudWatch Logs was configured"
+}
+
 output "ebs_snapshot_block_public_access_configured" {
   value       = local.enabled && var.ebs_snapshot_block_public_access_enabled
   description = "Whether EBS snapshot block public access was configured"

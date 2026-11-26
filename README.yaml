@@ -20,7 +20,7 @@ introduction: |-
   > to overwrite the current one.
 
 description: |-
-  This component is responsible for provisioning account-level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, SSM session preferences, SSM Default Host Management Configuration, EBS snapshot block public access, EC2 instance metadata defaults, EC2 AMI block public access, and EMR block public access configuration.
+  This component is responsible for provisioning account-level settings: AWS Account Alias, EBS encryption, S3 block public access, alternate contacts, SSM session preferences and session logging, SSM Automation logging, SSM Default Host Management Configuration, EBS snapshot block public access, EC2 instance metadata defaults, EC2 AMI block public access, and EMR block public access configuration.
 usage: |-
   **Stack Level**: Global
 
@@ -90,6 +90,31 @@ usage: |-
   Set `ssm_default_host_management_role_enabled: false` everywhere and `ssm_default_host_management_role_name` /
   `ssm_default_host_management_role_path` to use a role managed elsewhere. Destroying the component, or setting
   `ssm_default_host_management_enabled: false`, resets the service setting, which turns the feature off in that Region.
+
+  ### SSM Session Manager logging and Automation logging
+
+  Session Manager preferences can also send session logs to S3 and/or CloudWatch Logs, encrypt session data with KMS,
+  and set a Run As user. Options left unset are not written to the preferences document, so it stays unchanged until
+  one of them is set. The bucket, log group and KMS key must already exist, and the instance role needs permission to
+  write to them.
+
+  Automation logging sends the output of `aws:executeScript` actions to CloudWatch Logs (Security Hub control SSM.6).
+  Both are Regional, like the other SSM settings in this component.
+
+  ```yaml
+  components:
+    terraform:
+      account-settings:
+        vars:
+          ssm_session_preferences_enabled: true
+          ssm_session_s3_bucket_name: "acme-ssm-session-logs"
+          ssm_session_s3_key_prefix: "session-logs"
+          ssm_session_cloudwatch_log_group_name: "/aws/ssm/session-logs"
+          ssm_session_kms_key_id: "alias/ssm-sessions"
+          ssm_automation_cloudwatch_logging_enabled: true
+          # Optional; defaults to /aws/ssm/automation/executeScript
+          ssm_automation_cloudwatch_log_group_name: "/aws/ssm/automation"
+  ```
 
   <!-- prettier-ignore-start -->
   <!-- prettier-ignore-end -->
