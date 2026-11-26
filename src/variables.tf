@@ -96,6 +96,43 @@ variable "ssm_block_public_document_sharing" {
   default     = false
 }
 
+variable "ssm_default_host_management_enabled" {
+  type        = bool
+  description = <<-EOT
+    Whether to turn on SSM Default Host Management Configuration in this Region by setting the
+    `/ssm/managed-instance/default-ec2-instance-management-role` service setting. The service setting is Regional and
+    must be turned on in every Region where EC2 instances should be managed.
+    EOT
+  default     = false
+}
+
+variable "ssm_default_host_management_role_enabled" {
+  type        = bool
+  description = <<-EOT
+    Whether to create the IAM role used by Default Host Management Configuration. IAM roles are global, so when this
+    component is deployed to several Regions of the same account, set this to `true` in one Region only and to `false`
+    in the others (they reference the role by name). Only used when `ssm_default_host_management_enabled` is `true`.
+    EOT
+  default     = true
+}
+
+variable "ssm_default_host_management_role_name" {
+  type        = string
+  description = "Name of the IAM role used by Default Host Management Configuration"
+  default     = "AWSSystemsManagerDefaultEC2InstanceManagementRole"
+}
+
+variable "ssm_default_host_management_role_path" {
+  type        = string
+  description = "IAM path of the Default Host Management Configuration role. Must begin and end with `/`."
+  default     = "/service-role/"
+
+  validation {
+    condition     = startswith(var.ssm_default_host_management_role_path, "/") && endswith(var.ssm_default_host_management_role_path, "/")
+    error_message = "ssm_default_host_management_role_path must begin and end with a forward slash (/)."
+  }
+}
+
 variable "ssm_session_preferences_enabled" {
   type        = bool
   description = "Whether to configure SSM Session Manager preferences (idle timeout)"
